@@ -1,0 +1,5 @@
+Header always unset X-Frame-Options
+Header set Access-Control-Allow-Origin "*"
+Header set Cross-Origin-Resource-Policy "cross-origin"
+RewriteEngine On
+ErrorDocument 404 https://g55.co/

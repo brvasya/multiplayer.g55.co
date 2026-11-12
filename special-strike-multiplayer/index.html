@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title></title>
+<link rel="preload" as="image" href="./thumb.png" fetchpriority="high">
+<style id="preloaderStyle">
+/* Keep preloader styles inline so the first paint needs no CSS request. */
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #333;
+}
+
+#preloader {
+  --preloader: 85px;
+  --preloader-logo-height: 63px;
+  --preloader-logo-y: calc(50% - var(--preloader)/2 - 5px);
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: radial-gradient(#666, #333);
+  color: #fff;
+  font: 700 13px/1 Arial, sans-serif;
+  overflow: hidden;
+  transition: opacity .35s ease, visibility .35s ease;
+}
+
+#preloader::before,
+#preloaderRetry {
+  position: absolute;
+  left: 50%;
+  width: 248px;
+  max-width: calc(100% - 40px);
+}
+
+#preloader::before {
+  content: "";
+  top: var(--preloader-logo-y);
+  height: var(--preloader-logo-height);
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPgAAAA/CAYAAADNPAUHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAhJJREFUeNrs3UFuwjAUBcDY4kg5kw/FmbiTKyRYtGoCVRPjb88sukLwcHiJDU2Saq0LMKbL/c+6rnuP6W0PkDrONnruVmrQMag9ZbvdbksONtBLKSXklEPusOV+dww+lXvzda/X627Bzd2Z/cgdJffm62flRkmGyF3fLbhyo9wxc9dXBVdulDt27rpVcOVGSXbcv5UOkrv+LLhyo9xjlPtbzuxzBuPuRBUcBqbgoOCAggMKDig4oODAlssRT1JKCfnm5Y5rhm13P92zi4I/wqSIAy53XC3H4Mgdyh9y//u/5kzRwRocUHBAwYE2LjO/+ce3lEee/pfkxhF8XK5OgoIrudwouJLLTYdr8LM/JClQWVLQkluTO4J/RrA7hDiSo+Cm63Kj4EouNwpuaSE3Cg4KDig4oOCAggMKDig4TCz6+eCp1e+0R1zhcoDcKHhbDa+sWeXGFB1QcCDmFH13fWlNCMHX4C/Wl9aEYIoOdHEEP+Eyvu9ynnWs3If9ctD4Mxc1tyM47Tgn3hQdUHBAwUHBAQUHFBxQcKBhwUPci6qUEnKQ5f5VqPufreu6ROxKjjLgz8ANz6OW+/zcSn7ujjnlCAOuJEPnjnon0xBdyb0HV5Ipciv5Sdsu9xxcSabKreQnbLvca3AlmTK3kh+87XKPwZVk6txKfuC2S7XW5wP2nqd2PGA16IaeNbfxaZjtS4ABAKJ04U5ThTiQAAAAAElFTkSuQmCC);
+  transform: translate(-50%, -50%);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+#preloader.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.preloader-panel {
+  position: absolute;
+  inset: auto max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  height: var(--preloader);
+  padding: 35px 10px 10px 125px;
+  background: #222;
+  border-radius: 5px;
+  box-sizing: border-box;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+#preloader .preloader-title,
+#preloaderText {
+  position: absolute;
+  top: 10px;
+  margin: 0;
+  font: 700 13px/1 Arial, sans-serif;
+  color: #fff;
+}
+
+#preloader .preloader-title { left: 125px; }
+#preloaderText { right: 10px; width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
+
+.preloader-bar {
+  height: 100%;
+  background: #111;
+  border: 5px solid #111;
+  border-radius: 5px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+#preloaderFill {
+  width: 100%;
+  height: 100%;
+  background: #d3ad5a;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .15s ease;
+}
+
+.preloader-title::after {
+  content: "";
+  display: inline-block;
+  width: 3ch;
+  animation: g55-loading 1s steps(1) infinite;
+}
+
+#preloader.failed .preloader-title::after { content: none; animation: none; }
+#preloaderRetry[hidden] { display: none; }
+
+#preloaderRetry {
+  top: calc(var(--preloader-logo-y) + var(--preloader-logo-height)/2 + 16px);
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  text-align: center;
+  padding: 8px 12px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  background: #333;
+  color: #fff;
+  font: 700 13px/1.5 Arial, sans-serif;
+  cursor: pointer;
+}
+
+#preloaderRetry:focus-visible { outline: 2px solid #e3b95a; outline-offset: 2px; }
+
+@keyframes g55-loading {
+  25% { content: "."; }
+  50% { content: ".."; }
+  75%, 100% { content: "..."; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #preloader, #preloaderFill { transition: none; }
+  .preloader-title::after { animation: none; }
+}
+</style>
+</head>
+<body>
+<div id="preloader" role="progressbar" aria-label="G55.CO — Loading game" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-busy="true">
+  <div class="preloader-panel" style="background-image: url('./thumb.png')">
+    <span class="preloader-title" role="status">Loading</span><span id="preloaderText">0%</span>
+    <div class="preloader-bar"><div id="preloaderFill"></div></div>
+  </div>
+  <button id="preloaderRetry" type="button" hidden>Reload Game</button>
+</div>
+<script type="module" data-game-config="./gameConfig.js">
+// Resolve relative to the game's configuration, including nested deployments.
+try {
+  const config = new URL(document.querySelector("script[data-game-config]").dataset.gameConfig, document.baseURI);
+  let engine;
+  const errors = [];
+  for (const path of ["./engine/", "../engine/"]) {
+    try {
+      engine = await import(new URL(path + "bootstrap.js", config).href);
+      break;
+    } catch (error) { errors.push(error); }
+  }
+  if (!engine) throw new AggregateError(errors, "Game engine not found in ./engine/ or ../engine/.");
+  if (typeof engine.bootstrapMultiplayer !== "function") throw new Error("Update the selected engine folder to the portable build.");
+  await engine.bootstrapMultiplayer(config);
+} catch (error) {
+  // This fallback must also work when neither engine can be imported.
+  const preloader = document.getElementById("preloader");
+  preloader.setAttribute("role", "region");
+  preloader.setAttribute("aria-label", "G55.CO — Loading failed");
+  preloader.setAttribute("aria-busy", "false");
+  for (const name of ["aria-valuemin", "aria-valuemax", "aria-valuenow"]) preloader.removeAttribute(name);
+  preloader.classList.add("failed");
+  const title = preloader.querySelector(".preloader-title");
+  title.setAttribute("role", "alert");
+  title.textContent = "Loading failed";
+  const retry = document.getElementById("preloaderRetry");
+  retry.hidden = false;
+  retry.onclick = () => location.reload();
+  retry.focus();
+  console.error(error);
+}
+</script>
+</body>
+</html>

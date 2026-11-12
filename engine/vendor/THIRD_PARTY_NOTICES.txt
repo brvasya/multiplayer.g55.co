@@ -1,0 +1,49 @@
+THIRD-PARTY VENDOR NOTICES
+
+The files below are distributed with this engine. License texts and notices
+remain beside the code in this directory. Each component retains its own
+license; the files here do not assign a license to the game's original code.
+
+Three.js r164
+-------------
+Files: three.module.js, SkeletonUtils.js
+License: three.LICENSE (MIT, Copyright 2010-2024 three.js authors)
+Sources:
+  https://github.com/mrdoob/three.js/tree/r164
+  https://github.com/mrdoob/three.js/blob/r164/LICENSE
+  https://github.com/mrdoob/three.js/blob/r164/examples/jsm/utils/SkeletonUtils.js
+Local modification: SkeletonUtils.js imports ./three.module.js so the bundled
+modules can load from the flat vendor directory.
+
+Ammo.js / Bullet Physics
+------------------------
+Files: ammo.wasm.js, ammo.wasm.wasm
+Licenses: ammo.LICENSE contains the Ammo.js and Bullet zlib notices, the
+Ammo.js author notice, and upstream Emscripten/musl runtime notices.
+Distributed build sources:
+  https://github.com/mrdoob/three.js/blob/r164/examples/jsm/libs/ammo.wasm.js
+  https://github.com/mrdoob/three.js/blob/r164/examples/jsm/libs/ammo.wasm.wasm
+Upstream project: https://github.com/kripken/ammo.js
+The WASM binary matches the Three.js r164 distribution. The JavaScript matches
+that distribution before the local wrapper, apart from trailing whitespace.
+Local modification: the ES module wrapper invokes Ammo.call({}, options) and
+exports the resulting loader as the default export. The existing source marks
+this wrapper as local.
+
+Photon Realtime 4.4.0
+--------------------
+File: photon-4.4.0.js
+Licensing notice: photon.LICENSE
+Copyright (C) Exit Games GmbH 2025.
+Package: https://www.npmjs.com/package/photon-realtime/v/4.4.0
+Archive: https://registry.npmjs.org/photon-realtime/-/photon-realtime-4.4.0.tgz
+Upstream license declaration:
+  SEE LICENSE IN https://www.photonengine.com/terms
+Local modification: the Node-only ws adapter/footer is replaced with the
+browser's native WebSocket and a default ES module export. The npm ws package
+is not bundled in this directory.
+The included $jscomp helpers come from Closure Compiler; their Apache 2.0
+license and attribution are also recorded in photon.LICENSE.
+
+License sources were checked against the upstream projects and the published
+Photon 4.4.0 package on 2026-11-11.
