@@ -81,6 +81,27 @@ export function createTouchControls(api) {
   const available = () => visible && !isPortrait() && !document.hidden && api.isActive();
   const playable = () => available() && !pickerOpen;
 
+  // Pointer-event cancellation does not cancel native pinch zoom. Keep Safari's
+  // gesture stream and multi-touch defaults out of gameplay, including canvas gaps.
+  const zoomGuardActive = () => visible && !document.hidden && api.isActive();
+  let blockingTouchZoom = false;
+  const preventZoom = event => { if (event.cancelable) event.preventDefault(); };
+  const guardTouchZoom = event => {
+    blockingTouchZoom ||= event.touches.length > 1 && zoomGuardActive();
+    if (blockingTouchZoom) preventZoom(event);
+    // Use physical touches, not presses: opening the picker resets the controls
+    // while the movement finger can still be on the screen.
+    if (event.touches.length === 0) blockingTouchZoom = false;
+  };
+  for (const type of ["touchstart", "touchmove", "touchend", "touchcancel"]) {
+    document.addEventListener(type, guardTouchZoom, { capture: true, passive: false });
+  }
+  for (const type of ["gesturestart", "gesturechange", "gestureend"]) {
+    document.addEventListener(type, event => {
+      if (blockingTouchZoom || zoomGuardActive()) preventZoom(event);
+    }, { capture: true, passive: false });
+  }
+
   // A pointer-release action can change the UI before its compatibility click.
   // Swallow that click even if it lands on a newly opened menu or chat button.
   let suppressPointerClick = false;
