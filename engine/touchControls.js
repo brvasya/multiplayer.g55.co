@@ -81,6 +81,17 @@ export function createTouchControls(api) {
   const available = () => visible && !isPortrait() && !document.hidden && api.isActive();
   const playable = () => available() && !pickerOpen;
 
+  // A pointer-release action can change the UI before its compatibility click.
+  // Swallow that click even if it lands on a newly opened menu or chat button.
+  let suppressPointerClick = false;
+  document.addEventListener("pointerdown", () => { suppressPointerClick = false; }, true);
+  document.addEventListener("click", event => {
+    if (!suppressPointerClick || event.detail === 0) return;
+    suppressPointerClick = false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
+
   // Each surface owns one pointer until release/cancellation, even outside its bounds.
   function bindPress(element, { start, move, end, tap, allowed = playable, tapOnPointerUp = false }) {
     let pendingTap = false;
@@ -113,11 +124,13 @@ export function createTouchControls(api) {
       pendingTap = tapped && !tapOnPointerUp;
       release(element, press, tapped);
       // A second finger may release without producing a click while moving.
-      if (tapped && tapOnPointerUp) tap?.();
+      if (tapped && tapOnPointerUp) {
+        suppressPointerClick = true;
+        tap?.();
+      }
     };
     for (const event of ["pointerup", "pointercancel", "lostpointercapture"]) element.addEventListener(event, finish);
-    // Open/close menus on click, after the browser resolves its target. Doing
-    // this on pointerup can retarget the following click into the new menu.
+    // Preserve keyboard/assistive activation without repeating a pointer tap.
     element.addEventListener("click", event => {
       event.preventDefault();
       event.stopPropagation();
@@ -144,7 +157,8 @@ export function createTouchControls(api) {
 
   const bindTap = (element, action, allowed = playable) => bindPress(element, {
     allowed,
-    tap: action
+    tap: action,
+    tapOnPointerUp: true
   });
 
   function moveStick(event, press) {
