@@ -81,6 +81,21 @@ export function createTouchControls(api) {
   const available = () => visible && !isPortrait() && !document.hidden && api.isActive();
   const playable = () => available() && !pickerOpen;
 
+  // Safari selection/callouts are separate from its pan/zoom gestures.
+  const textField = node => /^(INPUT|TEXTAREA|SELECT)$/.test(node?.tagName) || node?.isContentEditable;
+  const selectionGuardActive = () => visible && !document.hidden && api.isActive() && !textField(document.activeElement);
+  for (const type of ["selectstart", "contextmenu", "dragstart"]) {
+    document.addEventListener(type, event => {
+      if (selectionGuardActive() && !textField(event.target) && event.cancelable) event.preventDefault();
+    }, { capture: true, passive: false });
+  }
+  const clearGameplaySelection = () => {
+    if (!selectionGuardActive()) return;
+    const selection = document.getSelection();
+    if (selection && !selection.isCollapsed) selection.removeAllRanges();
+  };
+  document.addEventListener("selectionchange", clearGameplaySelection, true);
+
   // Pointer-event cancellation does not cancel native pinch zoom. Keep Safari's
   // gesture stream and multi-touch defaults out of gameplay, including canvas gaps.
   const zoomGuardActive = () => visible && !document.hidden && api.isActive();
@@ -270,6 +285,7 @@ export function createTouchControls(api) {
       root.classList.toggle("visible", visible);
       document.body.classList.toggle("touch-controls-visible", visible);
       if (!visible) { setPickerOpen(false); reset(); }
+      else clearGameplaySelection();
     }
     const portrait = isPortrait();
     root.classList.toggle("portrait", portrait);
