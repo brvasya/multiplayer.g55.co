@@ -54,7 +54,7 @@ export async function createMultiplayerGame(hooks, config) {
     look: (x, y) => player.addLookDelta(x, y, scoped ? .2 : .72), jump: () => player.queueJump(),
     toggleCrouch: () => { if (active()) player.toggleCrouch(); },
     reload: () => reload(), toggleScope: () => secondary(!scoped), clearScope: () => secondary(false),
-    pause: () => hooks.pause(), getWeapons: () => weapon.getWeaponList(),
+    pause: () => hooks.pause(), openChat: () => hooks.openChat(), getWeapons: () => weapon.getWeaponList(),
     switchWeapon: slot => switchWeapon(slot), getStatus: () => ({ ...weapon.getHudState(),
       crouched: player.inputState.crouched,
       canScope: weapon.hasScope() || weapon.hasFlashlightAttachment(), scoped: scoped || weapon.isFlashlightActive(),

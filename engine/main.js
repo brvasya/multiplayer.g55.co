@@ -259,7 +259,7 @@ export async function startMultiplayerGame(definition, preloader = createPreload
       progress: preloader.progress, localId: () => network.id, isEnded: () => session?.state.phase === "ended",
       timerText, frame, fullscreen,
       soundChanged: muted => { ui.Sound.textContent = muted ? "Sound: Off" : "Sound: On"; ui.Sound.setAttribute("aria-pressed", String(!muted)); },
-      pause: () => { menu(true); status("Menu open. The match continues."); }, scores,
+      pause: () => { menu(true); status("Menu open. The match continues."); }, scores, openChat: () => chat.open(),
       fire: data => { sendPose(); session?.request(EVENTS.FIRE, data); }
     }, config);
     customization = createPlayerCustomization({ game, read, save,

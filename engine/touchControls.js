@@ -226,6 +226,12 @@ export function createTouchControls(api) {
   });
   bindPress(find("#touchJumpButton"), { start: () => api.jump() });
   bindTap(find("#touchPauseButton"), () => { reset(); api.pause(); });
+  const chatButton = document.getElementById("mpChatButton");
+  if (chatButton) {
+    chatButton.onclick = null;
+    // Chat owns room availability and can still open while the player is dead.
+    bindTap(chatButton, () => api.openChat(), () => !document.hidden && !isPortrait() && !pickerOpen);
+  }
   bindTap(weaponTrigger, () => setPickerOpen(!pickerOpen), () => available() && !api.getStatus().isReloading);
   bindTap(find(".touch-picker-backdrop"), () => setPickerOpen(false), () => available() && pickerOpen);
   bindTap(find(".touch-picker-close"), () => setPickerOpen(false), () => available() && pickerOpen);
