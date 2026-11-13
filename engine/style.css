@@ -468,7 +468,11 @@ body.touch-device .cs-topbar {
 .rotate-device strong { font-size: 24px; }
 #touchControls.portrait > :not(.rotate-device) { display: none !important; }
 #touchControls.portrait .rotate-device { display: flex; }
-body.touch-device.touch-controls-visible.touch-portrait #hud { opacity: 0; }
+/* Keep all gameplay overlays off the rotate-device screen. */
+body.touch-device.touch-controls-visible.touch-portrait :is(
+  #hud, #mpConnection, #mpNotice, #mpNotifications, #mpScores,
+  #reloadStatus, #sniperScope, #damageFlash
+) { display: none; }
 @media (max-height: 420px) {
   .touch-stick { width: 92px; height: 92px; }
   .touch-stick-knob { width: 34px; height: 34px; margin: -17px 0 0 -17px; }
@@ -702,7 +706,6 @@ body a:focus,
 .touch-device #mpChat.is-open { position: fixed; display: block; left: calc(var(--mp-viewport-left, 0px) + 12px); top: calc(var(--mp-viewport-top, 0px) + var(--mp-viewport-height, 100dvh) - max(8px, env(safe-area-inset-bottom))); bottom: auto; transform: translateY(-100%); width: calc(var(--mp-viewport-width, 100vw) - 24px); }
 .touch-device #mpChat.is-open #mpChatMessages { max-height: min(160px, max(0px, calc(var(--mp-viewport-height, 100dvh) - 110px))); }
 .touch-device.mp-chat-active #mpFeed { display: none; }
-.touch-device.touch-controls-visible.touch-portrait #mpNotifications { display: none; }
 @media (max-height: 420px) {
   .touch-device #mpNotifications { --notifications-bottom: calc(max(24px, env(safe-area-inset-bottom, 0px) + 12px) + 100px); }
 }
