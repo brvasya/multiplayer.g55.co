@@ -27,7 +27,7 @@ export function mountMultiplayerUI(config) {
 <div id="damageFlash"></div>
 <div id="mpConnection" hidden></div>
 <div id="mpNotice" role="status" aria-live="polite" hidden></div>
-<div id="mpFeed" aria-live="polite"></div>
+<div id="mpNotifications"><div id="mpFeed" aria-live="polite"></div></div>
 <section id="mpMenu" class="mp-menu" role="dialog" aria-modal="true" aria-labelledby="mpTitle">
   <div class="mp-panel">
     <div id="mpMenuContent" class="mp-menu-content">
@@ -139,7 +139,7 @@ export function mountMultiplayerUI(config) {
   };
   fitViewport();
   const link = document.createElement("link"); link.rel = "stylesheet";
-  link.href = new URL("./style.css?v=multiplayer-engine-31", import.meta.url).href; document.head.appendChild(link);
+  link.href = new URL("./style.css?v=multiplayer-engine-32", import.meta.url).href; document.head.appendChild(link);
   if (config.ui.font) {
     const preload = document.createElement("link"); preload.rel = "preload"; preload.as = "font"; preload.type = "font/woff2";
     preload.crossOrigin = "anonymous"; preload.href = config.ui.font; document.head.appendChild(preload);

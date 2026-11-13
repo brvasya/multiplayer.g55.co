@@ -16,7 +16,7 @@ export function createRoomChat({ send, onOpen, onClose }) {
       <span id="mpChatStatus" role="status"></span>
     </form>
     <button id="mpChatButton" type="button" aria-label="Open room chat" aria-controls="mpChatForm" aria-expanded="false">Chat</button>`;
-  document.body.appendChild(root);
+  document.getElementById("mpNotifications").appendChild(root);
   const find = id => root.querySelector("#mpChat" + id);
   const log = find("Messages"), form = find("Form"), input = find("Input");
   const closeButton = find("Close"), button = find("Button"), status = find("Status");
