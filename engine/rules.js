@@ -13,7 +13,7 @@ export function cleanChatText(value) {
 export const MAX_IMPACTS = 64;
 export const elapsed = (now, then) => (now - then) | 0;
 export const validVector = value => Array.isArray(value) && value.length === 3 && value.every(n => Number.isFinite(n) && Math.abs(n) < 1000);
-export const cleanName = value => String(value || "Soldier").replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 20) || "Soldier";
+export const cleanName = value => String(value || "Player").replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 20) || "Player";
 
 export function validMotion(motion) {
   return motion == null || (validVector(motion.velocity) && motion.velocity.every(value => Math.abs(value) <= 64)

@@ -41,7 +41,7 @@ export function mountMultiplayerUI(config) {
     <div class="mp-lobby-grid">
       <div class="mp-match-column">
         <div id="mpSetup">
-          <label class="mp-name-field" for="mpName">Player Name<input id="mpName" autocomplete="nickname" maxlength="20" placeholder="Soldier" disabled></label>
+          <label class="mp-name-field" for="mpName">Player Name<input id="mpName" autocomplete="nickname" maxlength="20" placeholder="Player" disabled></label>
           <div id="mpPlayActions" class="mp-play-actions"><button id="mpQuick" class="mp-primary mp-play" type="button" disabled>Play</button><a id="mpMoreGames" class="mp-button mp-more-games" target="_blank" rel="noopener noreferrer" aria-label="More games (opens in a new tab)" hidden>More Games</a></div>
           <section id="mpBrowser" class="mp-room-browser" aria-label="Public rooms" aria-busy="true" tabindex="-1">
             <div class="mp-room-list" role="region" aria-label="Available rooms" tabindex="0"><table aria-label="Public rooms"><thead><tr><th scope="col">MAP / ROOM</th><th scope="col">PLAYERS</th><th scope="col"><span class="mp-sr-only">Join room</span></th></tr></thead><tbody id="mpBrowserRows"></tbody></table><p id="mpBrowserMessage" role="status">Loading public rooms…</p></div>

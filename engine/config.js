@@ -71,7 +71,7 @@ export function resolveGameConfig(input) {
   if (!/^[0-9a-f-]{36}$/i.test(photon.appId || "")) throw new Error("Configure a Photon Realtime App ID.");
   if (!Object.hasOwn(photon.regions, photon.defaultRegion)) throw new Error("The default Photon region must be enabled.");
   return { ...input, rules, photon, maps: resolveMapConfig(input.maps),
-    storagePrefix: input.storagePrefix || input.id + ":", defaultName: input.defaultName || "Soldier",
+    storagePrefix: input.storagePrefix || input.id + ":", defaultName: input.defaultName || "Player",
     player,
     assets: resolveAssets(input.assets, base), sounds: resolveAssets(input.sounds || {}, base),
     ui: resolveAssets(input.ui || {}, base) };
