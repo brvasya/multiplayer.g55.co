@@ -335,6 +335,7 @@ body.touch-device .cs-topbar {
   pointer-events: none;
 }
 #touchControls.visible { display: block; }
+#touchControls:has(.touch-weapon-picker:not([hidden])) { z-index: 50; }
 #touchControls, #touchControls * {
   box-sizing: border-box;
   user-select: none !important;
@@ -452,13 +453,14 @@ body.touch-device .cs-topbar {
 .touch-fire-hint { position: absolute; right: 0; bottom: 0; font-size: 9px; }
 .touch-weapon-trigger { appearance: none; position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; cursor: pointer; }
 .touch-weapon-trigger.active { background: var(--ui-accent-soft); }
-.touch-weapon-picker { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; pointer-events: auto; }
+.touch-weapon-picker { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); pointer-events: auto; }
 .touch-picker-backdrop { position: absolute; inset: 0; border: 0; background: var(--ui-overlay); width: 100%; height: 100%; }
-.touch-picker-panel { position: relative; width: min(450px, 86vw); padding: 12px; border: 1px solid var(--ui-line-strong); border-radius: var(--ui-radius); background: var(--ui-panel-solid); color: var(--ui-text); }
-.touch-picker-heading { display: flex; align-items: center; justify-content: space-between; font: 700 14px var(--ui-font); margin-bottom: 6px; }
-.touch-picker-close { width: 44px; height: 44px; color: var(--ui-text); border: 0; background: var(--ui-surface); border-radius: var(--ui-radius-small); font-size: 25px; }
-.touch-weapon-list { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
-.touch-weapon-option { min-height: 52px; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 8px; border: 1px solid var(--ui-line); border-radius: var(--ui-radius-small); background: var(--ui-surface); color: var(--ui-text); font: 700 11px var(--ui-font); }
+.touch-picker-panel { position: relative; display: flex; flex-direction: column; width: min(450px, 100%); max-height: 100%; padding: 12px; border: 1px solid var(--ui-line-strong); border-radius: var(--ui-radius); background: var(--ui-panel-solid); color: var(--ui-text); }
+.touch-picker-heading { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; gap: 8px; font: 700 14px var(--ui-font); margin-bottom: 6px; }
+.touch-picker-close { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; color: var(--ui-text); border: 0; background: var(--ui-surface); border-radius: var(--ui-radius-small); font: 700 25px/1 var(--ui-font); }
+.touch-weapon-list { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+#touchControls .touch-weapon-list, #touchControls .touch-weapon-list * { touch-action: pan-y; }
+.touch-weapon-option { min-width: 0; min-height: 52px; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 8px; border: 1px solid var(--ui-line); border-radius: var(--ui-radius-small); background: var(--ui-surface); color: var(--ui-text); font: 700 11px/1.3 var(--ui-font); overflow-wrap: anywhere; }
 .touch-weapon-option small { font-size: 10px; color: var(--ui-muted); }
 .touch-weapon-option[aria-pressed="true"], .touch-weapon-option.active { border-color: var(--ui-accent-bright); background: var(--ui-accent-soft); }
 .rotate-device { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; flex-direction: column; gap: 12px; background: var(--ui-panel-solid); color: var(--ui-text); text-align: center; font: 12px/1.5 var(--ui-font); pointer-events: auto; }
@@ -657,13 +659,12 @@ body a:focus,
 .mp-score-panel h2 { font-size: 18px; margin: 0 0 16px; color: #ebc779; }
 #mpScoreHint { flex-shrink: 0; color: #a0b1c0; font-size: 12px; margin-bottom: 0; }
 #mpConnection { position: fixed; top: max(12px, env(safe-area-inset-top)); right: max(18px, env(safe-area-inset-right)); z-index: 8; max-width: calc(50vw - 72px); overflow: hidden; text-overflow: ellipsis; text-align: right; font-size: 10px; line-height: 1.2; white-space: nowrap; color: #d7e1e8; text-shadow: 0 1px 3px #000; pointer-events: none; }
-.touch-device #mpConnection { top: max(52px, env(safe-area-inset-top, 0px) + 48px); right: max(16px, env(safe-area-inset-right, 0px) + 10px); max-width: calc(100% - 24px); font-size: 9px; line-height: 10px; }
+.touch-device #mpConnection { display: none; }
 #mpNotice { position: fixed; top: 20%; left: 50%; transform: translateX(-50%); z-index: 9; border: 1px solid #e7c27877; background: #172634de; color: #ffe2a2; padding: 12px 20px; text-align: center; max-width: 85vw; border-radius: 4px; font-weight: 700; font-size: 14px; pointer-events: none; }
 #mpFeed { position: fixed; z-index: 8; top: 88px; right: 18px; text-align: right; pointer-events: none; font-size: 12px; }
 #mpFeed div { padding: 6px 10px; margin-bottom: 4px; background: #162433d9; border-right: 2px solid #c5a264; border-radius: 3px; }
 .mp-page .cs-topbar { pointer-events: none; }
 .mp-page.main-menu-active #mpFeed, .mp-page.main-menu-active #mpNotice { display: none; }
-.mp-page #touchControls button { padding: 0; }
 .mp-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 /* Gameplay room chat sits above health; its closed feed never captures clicks. */
 #mpChat { position: fixed; z-index: 45; left: max(28px, env(safe-area-inset-left)); bottom: max(126px, env(safe-area-inset-bottom)); width: min(440px, calc(100% - 56px)); color: #fff; font-size: 14px; line-height: 1.4; pointer-events: none; }
