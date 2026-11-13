@@ -7,6 +7,7 @@ import { createPlayerCustomization } from "./customization.js";
 import { createRoomBrowser } from "./roomBrowser.js";
 import { mountMultiplayerUI } from "./ui.js";
 import { createRoomChat } from "./chat.js";
+import { createRoomFeed } from "./roomFeed.js";
 import { createPreloader } from "./preloader.js";
 
 export async function startMultiplayerGame(definition, preloader = createPreloader()) {
@@ -17,7 +18,8 @@ export async function startMultiplayerGame(definition, preloader = createPreload
   const $ = id => document.getElementById(id);
   const ui = Object.fromEntries(["Menu", "Setup", "Room", "Name", "Region", "Map", "Quick", "PlayActions", "Create", "Sound", "Fullscreen", "RegionStatus", "Deploy", "Invite", "Leave", "Status", "Cancel", "RoomCode", "RoomInfo", "Connection", "Notice", "Feed", "Scores", "ScoreRows", "ScoreTitle", "ScoreHint", "RoomPlayers", "RoomScoreTitle"].map(key => [key, $("mp" + key)]));
   let game, session, room, customization, booted = false, roomLoaded = false, loadingToken = 0, poseSequence = 0;
-  let lastPoseAt = 0, scoreHeld = false, seenFeed = 0, feedTime = 0, lastPhase = "";
+  let lastPoseAt = 0, scoreHeld = false, lastPhase = "";
+  const feed = createRoomFeed(ui.Feed);
   const chat = createRoomChat({
     send: text => session?.sendChat(text) ?? "You are no longer connected to this room.",
     onOpen: () => { game.setChatting(true); scores(false); },
@@ -77,7 +79,7 @@ export async function startMultiplayerGame(definition, preloader = createPreload
     chat.clear();
     game?.leaveRoom(); ui.Setup.hidden = false; ui.Room.hidden = true; ui.Connection.hidden = true;
     ui.PlayActions.hidden = false; ui.Deploy.hidden = true;
-    ui.Notice.hidden = true; ui.Scores.hidden = true; ui.Feed.replaceChildren(); scoreHeld = false;
+    ui.Notice.hidden = true; ui.Scores.hidden = true; feed.reset(); scoreHeld = false;
     ui.RoomInfo.textContent = "";
     busy(false); menu(true); status(message, error);
   }
@@ -93,7 +95,10 @@ export async function startMultiplayerGame(definition, preloader = createPreload
     onError: message => disconnected(message, true),
     onDisconnected: () => disconnected("Connection lost. Join the room again to continue.", true),
     onEvent: (code, data, sender) => session?.receive(code, data, sender),
-    onMembers: () => { session?.membersChanged(); updateRoomInfo(); },
+    onMembers: () => {
+      if (room) feed.membersChanged(network.actors());
+      session?.membersChanged(); updateRoomInfo();
+    },
     onJoined: async joined => {
       if (!config.maps.items.some(map => map.id === joined.map)) {
         network.disconnect(); disconnected("This room uses an unsupported map.", true); return;
@@ -102,12 +107,13 @@ export async function startMultiplayerGame(definition, preloader = createPreload
         network.disconnect(); disconnected("This room uses an unsupported game mode. Reload the game and create a new room.", true); return;
       }
       const token = ++loadingToken; room = joined; roomLoaded = false; chat.clear();
+      feed.reset(network.actors(), network.id);
       ui.Map.value = room.map;
       updateRoomInfo();
       ui.Cancel.hidden = true; ui.Setup.hidden = true; ui.Room.hidden = false;
       ui.PlayActions.hidden = true; ui.Deploy.hidden = false;
       ui.RoomCode.textContent = room.code; ui.Deploy.disabled = true; ui.Deploy.textContent = "Loading arena…";
-      ui.Connection.hidden = false; poseSequence = 0; seenFeed = 0;
+      ui.Connection.hidden = false; poseSequence = 0;
       status("Room connected. Loading " + config.maps.items.find(map => map.id === room.map).name + "…");
       try {
         // Session initialization can fail before map loading starts. Keep the
@@ -169,13 +175,7 @@ export async function startMultiplayerGame(definition, preloader = createPreload
       lastPhase = state.phase;
       scores(scoreHeld);
     }
-    const newest = state.feed?.at(-1)?.id || 0;
-    if (newest > seenFeed) {
-      seenFeed = newest; feedTime = performance.now();
-      ui.Feed.replaceChildren(...state.feed.slice(-3).map(item => {
-        const node = document.createElement("div"); node.textContent = `${item.killer} → ${item.victim}${item.headshot ? " · HEADSHOT" : ""}`; return node;
-      }));
-    }
+    feed.kills(state.feed || [], state.round);
   }
   function timerText() {
     if (!session || session.state.phase === "waiting") return "WAITING";
@@ -184,6 +184,7 @@ export async function startMultiplayerGame(definition, preloader = createPreload
     return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
   }
   function frame() {
+    feed.update();
     if (!session || !roomLoaded) return;
     const me = session.me, now = network.now();
     ui.Connection.textContent = `ROOM ${room.code} · ${room.region.toUpperCase()} · ${network.actors().length}/${RULES.maxPlayers} · ${network.ping} ms${session.isHost ? " · HOST" : ""}`;
@@ -194,7 +195,6 @@ export async function startMultiplayerGame(definition, preloader = createPreload
     ui.Notice.textContent = notice; ui.Notice.hidden = !notice;
     if (session.state.phase === "ended") ui.ScoreHint.textContent = `Next round in ${Math.max(0, Math.ceil((RULES.intermissionMs - elapsed(now, session.state.ended)) / 1000))} seconds`;
     else ui.ScoreHint.textContent = `Round ${session.state.round} · First to ${session.scoreLimit} kills wins`;
-    if (feedTime && performance.now() - feedTime > 5500) { ui.Feed.replaceChildren(); feedTime = 0; }
   }
   function sendPose() {
     if (!session?.me?.ready || session.me.hp <= 0 || !roomLoaded || document.hidden) return;

@@ -139,7 +139,7 @@ export function mountMultiplayerUI(config) {
   };
   fitViewport();
   const link = document.createElement("link"); link.rel = "stylesheet";
-  link.href = new URL("./style.css?v=multiplayer-engine-36", import.meta.url).href; document.head.appendChild(link);
+  link.href = new URL("./style.css?v=multiplayer-engine-37", import.meta.url).href; document.head.appendChild(link);
   if (config.ui.font) {
     const preload = document.createElement("link"); preload.rel = "preload"; preload.as = "font"; preload.type = "font/woff2";
     preload.crossOrigin = "anonymous"; preload.href = config.ui.font; document.head.appendChild(preload);
