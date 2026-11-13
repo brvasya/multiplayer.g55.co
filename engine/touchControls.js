@@ -82,7 +82,7 @@ export function createTouchControls(api) {
   const playable = () => available() && !pickerOpen;
 
   // Each surface owns one pointer until release/cancellation, even outside its bounds.
-  function bindPress(element, { start, move, end, tap, allowed = playable }) {
+  function bindPress(element, { start, move, end, tap, allowed = playable, tapOnPointerUp = false }) {
     let pendingTap = false;
     element.addEventListener("pointerdown", event => {
       if (event.button !== 0 || presses.has(element) || !allowed()) return;
@@ -110,8 +110,10 @@ export function createTouchControls(api) {
       const rect = element.getBoundingClientRect();
       const tapped = event.type === "pointerup" && !press.moved && allowed() &&
         event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
-      pendingTap = tapped;
+      pendingTap = tapped && !tapOnPointerUp;
       release(element, press, tapped);
+      // A second finger may release without producing a click while moving.
+      if (tapped && tapOnPointerUp) tap?.();
     };
     for (const event of ["pointerup", "pointercancel", "lostpointercapture"]) element.addEventListener(event, finish);
     // Open/close menus on click, after the browser resolves its target. Doing
@@ -183,7 +185,10 @@ export function createTouchControls(api) {
   });
   bindTap(scopeButton, () => api.toggleScope());
   bindTap(crouchButton, () => api.toggleCrouch?.());
-  bindTap(reloadButton, () => api.reload());
+  bindPress(reloadButton, {
+    tap: () => api.reload(), tapOnPointerUp: true,
+    allowed: () => playable() && !reloadButton.disabled
+  });
   bindPress(find("#touchJumpButton"), { start: () => api.jump() });
   bindTap(find("#touchPauseButton"), () => { reset(); api.pause(); });
   bindTap(weaponTrigger, () => setPickerOpen(!pickerOpen), () => available() && !api.getStatus().isReloading);
