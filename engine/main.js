@@ -90,6 +90,7 @@ export async function startMultiplayerGame(definition, preloader = createPreload
       ui.RegionStatus.textContent = state.phase === "offline" ? "Not connected. Choose a region to try again."
         : !label ? "Finding a nearby server…" : `${state.phase === "lobby" || state.phase === "room" ? "Connected to" : "Connecting to"} ${label}`;
     },
+    onRegionFallback: region => { ui.Region.value = region; },
     onRooms: rooms => browser.setRooms(rooms),
     onStatus: status,
     onError: message => disconnected(message, true),

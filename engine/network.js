@@ -4,6 +4,11 @@ import { selectRegion } from "./regions.js";
 import { cleanName } from "./rules.js";
 
 const LBC = Photon.LoadBalancing.LoadBalancingClient;
+const CONNECTION_ERRORS = new Set([
+  LBC.PeerErrorCode.NameServerError, LBC.PeerErrorCode.NameServerConnectFailed, LBC.PeerErrorCode.NameServerConnectClosed, LBC.PeerErrorCode.NameServerTimeout,
+  LBC.PeerErrorCode.MasterError, LBC.PeerErrorCode.MasterConnectFailed, LBC.PeerErrorCode.MasterConnectClosed, LBC.PeerErrorCode.MasterTimeout,
+  LBC.PeerErrorCode.GameError, LBC.PeerErrorCode.GameConnectFailed, LBC.PeerErrorCode.GameConnectClosed, LBC.PeerErrorCode.GameTimeout
+]);
 export const roomCode = input => String(input || "").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 24);
 export function newRoomCode() {
   const bytes = crypto.getRandomValues(new Uint8Array(6));
@@ -72,8 +77,21 @@ export class PhotonNetwork {
     clearTimeout(this.timer);
     const generation = this.generation;
     this.timer = setTimeout(() => {
-      if (generation === this.generation) this.fail("Connection timed out. Check your connection or try another region.");
+      if (generation === this.generation) this.connectionFailed("Connection timed out. Check your connection or try another region.");
     }, 25000);
+  }
+  connectionFailed(message) {
+    const { photon } = this.config, request = this.pending;
+    // Only new matches may move regions. Selected rooms and invite links must
+    // stay in their original region, and a failed fallback must stop here.
+    if (request && ["quick", "create"].includes(request.action) && !request.fallbackUsed
+      && this.region !== "us" && this.regionPreference !== "us" && Object.hasOwn(photon.regions, "us")) {
+      const name = this.client?.myActor().name || "", from = photon.regions[this.region] || "The selected region";
+      const retry = { ...request, triedRooms: new Set(), listedCode: "", fallbackUsed: true };
+      this.autoRegion = "";
+      this.callbacks.onRegionFallback?.("us");
+      this.open({ name, region: "us" }, retry, `${from} is unavailable. Connecting to ${photon.regions.us}…`);
+    } else this.fail(message);
   }
   fail(message) {
     this.autoRegion = "";
@@ -116,7 +134,7 @@ export class PhotonNetwork {
     else accepted = this.client.joinRoom(photon.roomPrefix + code);
     if (accepted === false) this.fail("The room request could not be sent. Please retry.");
   }
-  open({ name, region }, request = null) {
+  open({ name, region }, request = null, connectingStatus = "Connecting…") {
     this.disconnect();
     const { photon } = this.config;
     if (region !== "auto" && !Object.hasOwn(photon.regions, region)) { this.callbacks.onError?.("Choose a supported region."); return; }
@@ -132,7 +150,10 @@ export class PhotonNetwork {
     let ready = false;
     this.setPhase("connecting"); this.armTimeout();
     client.onError = (error, message) => {
-      if (active()) this.fail(`Photon connection failed (${error}). ${message || "Please retry."}`);
+      if (!active()) return;
+      const text = `Photon connection failed (${error}). ${message || "Please retry."}`;
+      if (CONNECTION_ERRORS.has(error)) this.connectionFailed(text);
+      else this.fail(text);
     };
     client.onOperationResponse = (error, message) => {
       if (!active() || !error) return;
@@ -157,7 +178,9 @@ export class PhotonNetwork {
     };
     client.onStateChange = state => {
       if (!active()) return;
-      if (state === LBC.State.Disconnected || state === LBC.State.Error) {
+      // The SDK reports State.Error before onError; keep the client active so
+      // onError can inspect the cause and decide whether to retry in US East.
+      if (state === LBC.State.Disconnected) {
         if (ready) { this.disconnect(); this.callbacks.onDisconnected?.(); }
         else this.fail("Disconnected from Photon. Please retry.");
       } else if (state === LBC.State.ConnectedToNameServer && !this.region) {
@@ -204,7 +227,7 @@ export class PhotonNetwork {
     client.onActorJoin = client.onActorLeave = client.onMyRoomPropertiesChange = () => {
       if (active() && this.joined) this.callbacks.onMembers?.();
     };
-    if (request) this.callbacks.onStatus?.("Connecting…");
+    if (request) this.callbacks.onStatus?.(connectingStatus);
     if (!this.region) this.regionAbort = new AbortController();
     const accepted = this.region ? client.connectToRegionMaster(this.region) : client.connectToNameServer();
     if (accepted === false) this.fail("Could not start the connection. Please try again.");
